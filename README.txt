@@ -1,0 +1,1 @@
+I setup my EC2 instance and connected to it using PuTTY. THen I created a tutorial 2 repository and connected to git hub. Now I am writing a description of what I did in the tutorial and am going to save and commit this to test if it appears on my github.
