@@ -1,0 +1,4 @@
+Success
+Successfully initiated launch of instance (i-090be7a6cf0cd4a9a)
+Private IP address: 172.31.107.135
+Public IP address: 3.25.169.37
