@@ -59,6 +59,8 @@ const menuItems = [
 
 async function seedMenu() {
     await connectDB();
+    await menuItem.insertMany(menuItems);
+    await mongoose.disconnect();
 }
 
 seedMenu();
