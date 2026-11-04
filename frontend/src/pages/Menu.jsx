@@ -1,10 +1,20 @@
 import { useState, useEffect } from "react";
 import axiosInstance from "../axiosConfig";
 
-
+/*The Menu variable holds all the variables, states, and functions that dyanmically construct the menu*/
 const Menu = () => {
+
+    //setMenuItems:
+    // creates an empty array that is later filled by the setMenuItems
     const [menuItems, setMenuItems] = useState([]);
+
+    //setBasketItems:
+    // creates an empty array that addToBasket, increaseQuantity, decreaseQuantity, and removeItem add/remove from
     const [basketItems, setBasketItems] = useState([]);
+
+    //addToBasket:
+    // is used in the 'Add to Order' button in the below HTML. It adds an item the the setBasketItems [ ], 
+    // checks if the item allready exists, if so, adds to the specific item quantity using basketItem.quantity + 1
     const addToBasket = (item) => {
         setBasketItems((previousItems) => {
             
@@ -30,6 +40,34 @@ const Menu = () => {
     });
     };
 
+    // decreaseQuantity: 
+    // reduce an items quantity by 1
+    const decreaseQuantity = (item) => {
+        setBasketItems((previousItems) => {
+            return previousItems.map((basketItem) => {
+
+                // check if the .map() basketItem id matches the item id of the item the '-' button was clicked for, 
+                // checks if its >0, then reduces quantity by 1 if true
+                if (basketItem._id === item._id && basketItem.quantity >0) {
+                    return { ...basketItem, quantity: basketItem.quantity - 1 };
+            }
+
+                return basketItem;
+
+            // filter the above output to remove items from the basket that reach 0
+            }).filter((basketItem) => basketItem.quantity >0 );
+        });
+    }
+
+    const removeItem = (item) => {
+        setBasketItems((previousItems) => {
+            return previousItems.filter((basketItem) => {
+
+                return basketItem._id !== item._id;
+            });
+        });
+    }
+
     useEffect(() => {
         const getMenuItems = async () => {
         try {
@@ -52,44 +90,61 @@ const Menu = () => {
 
             <h1 className="text-2xl font-bold mb-4 text-center">Menu</h1>
 
-            <div>
+            <div className="max-w-sm rounded-lg border border-gray-300 bg-gray-50 p-2">
 
-                <h2 className="font-bold">Basket</h2>
+                <h2 className="mb-3 text-lq font-bold">
+                    Order
+                </h2>
 
                 {basketItems.map((item) => (
                     <div key={item._id}>
-                        <div>
-                        {item.itemTitle}: {item.quantity} - ${(item.itemPrice * item.quantity).toFixed(2)}
+                        <div className="mb-1 rounded-sm border border-gray-200 bg-white p-1">
+                            {/* basket item display */}
+                            <p>
+                                {item.itemTitle}: {item.quantity}
+                                {/* addToBasket reused for the increase quantity button */}
+                                (${(item.itemPrice * item.quantity).toFixed(2)}) 
+                            </p>
+
+                            {/* basket management buttons */}
+                            <div className="mt-2 flex items-center gap-3">
+                                <button className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100" onClick={() => addToBasket(item)}> + </button>
+                                <button className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100" onClick={() => decreaseQuantity(item)}> - </button>
+                                <button className="rounded-md border border-red-300 px-3 py-1 text-red-700 hover:bg-red-50" onClick={() => removeItem(item)}> R </button>
+                            </div> 
+
                         </div>
                     </div>
                 ))}
 
-                <div>
+                <p className="mt-3 border-t border-gray-300 pt-3 font-bold">
                     Total: ${basketTotal.toFixed(2)}
-                </div>
-                
+                </p>
+
             </div>
 
-            <div>
+            <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 lg:grid-cols-3">
                 {menuItems.map((item) => (
-                <div key={item._id}>
-                    <img 
+                <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm" key={item._id}>
+                    <img className="mx-auto mt-3 h-28 w-40 rounded-md object-contain"
                         src={item.itemImageLocation} 
                         alt={item.itemTitle} 
-                        className="w-48 h-32 object-cover">
+                    >
                     </img>
-                    <h2>
-                        {item.itemTitle}
-                    </h2>
-                    <p>
-                        {item.itemDescription}
-                    </p>
-                    <p>
-                        ${item.itemPrice.toFixed(2)}
-                    </p>
-                    <button onClick={() => addToBasket(item)}> 
-                        Add to Order
-                    </button>
+                    <div className="flex flex-1 flex-col gap-2 p-4">
+                        <h2 className="text-lg font-semibold">
+                            {item.itemTitle}
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                            {item.itemDescription}
+                        </p>
+                        <p className="mt-auto pt-2 font-semibold">
+                            ${item.itemPrice.toFixed(2)}
+                        </p>
+                        <button className="rounded-md bg-blue-700 px-4 py-2 font-semibold text-white hover:bg-blue-800" onClick={() => addToBasket(item)}> 
+                            Add to Order
+                        </button>
+                    </div>
                 </div>
                 ))}
             </div>
