@@ -100,15 +100,21 @@ const Menu = () => {
                     <div key={item._id}>
                         <div className="mb-1 rounded-sm border border-gray-200 bg-white p-1">
                             {/* basket item display */}
-                            <p>
-                                {item.itemTitle}: {item.quantity}
-                                {/* addToBasket reused for the increase quantity button */}
-                                (${(item.itemPrice * item.quantity).toFixed(2)}) 
+                            <p className="flex items-center justify-between gap-3">
+                                <span>
+                                    {item.itemTitle}
+                                </span>
+                                <span className="shrink-0">
+                                    {/* addToBasket reused for the increase quantity button */}
+                                    (${(item.itemPrice * item.quantity).toFixed(2)}) 
+                                </span>
+                                
                             </p>
 
                             {/* basket management buttons */}
                             <div className="mt-2 flex items-center gap-3">
                                 <button className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100" onClick={() => addToBasket(item)}> + </button>
+                                {item.quantity}
                                 <button className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100" onClick={() => decreaseQuantity(item)}> - </button>
                                 <button className="rounded-md border border-red-300 px-3 py-1 text-red-700 hover:bg-red-50" onClick={() => removeItem(item)}> R </button>
                             </div> 
