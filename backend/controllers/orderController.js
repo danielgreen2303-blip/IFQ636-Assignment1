@@ -1,0 +1,78 @@
+const user = require("../models/user");
+const menuItems = require("../models/menuItems");
+const order = require("../models/order");
+
+const submitOrder = async (req, res) => {
+
+    // read the items from req
+    const { 
+        userId, 
+        orderItems, 
+        orderTotalPrice, 
+        orderStatus, 
+        orderTime } 
+        = req.body;
+
+    try {
+
+        // check if orderItems is not an array or that the it is 0 items long, return error if either is true
+        if (!Array.isArray(orderItems) || orderItems.length === 0) 
+            return res.status(400).json({ message: "An order must have atleast one item." });
+
+        // info from mongoDB
+        const ids = orderItems.map(item => item.menuItemId);
+        const mongoItems = await menuItems.find({
+            _id: { $in: ids },
+        });
+
+        // check if recieved order item IDs match database item IDs
+        if (ids.length !== mongoItems.length) 
+            return res.status(400).json({ message: "One or more menu items in the order were not found." });
+
+        // validate the total price of the recieved order items using the price stored in the database instead of 
+        // accepting the orderTotalPrice recieved from the frontend
+        const validatedTotal = mongoItems.reduce((sum, mongoItem) => {
+
+            // checking that the recieved items ids are in the database
+            const match = orderItems.find(
+                item => item.menuItemId === String(mongoItem._id)
+            );
+            const subtotal = mongoItem.itemPrice * match.itemQuantity;
+            return sum + subtotal;
+        }, 0);
+
+        const userExists = await user.findById(userId);
+        if (!userExists) 
+            return res.status(400).json({ message: "User does not exist." });
+
+        const verifiedOrderItems = mongoItems.map(item => {
+            // match uses find() to the matching mongoDB ID for the basketItem
+            const match = orderItems.find(
+                basketItem => basketItem.menuItemId === String(item._id)
+            );
+
+            return {
+                menuItemId: item._id,
+                itemTitle: item.itemTitle,
+                itemPrice: item.itemPrice,
+                itemQuantity: match.itemQuantity,   // this returns the corresponding item quantity for the matched item found above
+            };
+        });
+
+        // create the order entry in the database and change the react order total to the validated total
+        const createOrder = await order.create({ userId, orderItems: verifiedOrderItems, orderTotalPrice: validatedTotal });
+        res.status(201).json({ 
+            orderId: createOrder.id,
+            user: createOrder.userId,
+            items: createOrder.orderItems,
+            price: createOrder.orderTotalPrice,
+            orderStatus: createOrder.orderStatus,
+            time: createOrder.orderTime,
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+};
+
+module.exports = {submitOrder, }
