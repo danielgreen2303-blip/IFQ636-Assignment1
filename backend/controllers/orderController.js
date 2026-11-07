@@ -1,7 +1,9 @@
+const mongoose = require("mongoose")
 const user = require("../models/user");
 const menuItems = require("../models/menuItems");
 const order = require("../models/order");
 
+// Controller
 const submitOrder = async (req, res) => {
 
     // read the items from req
@@ -19,8 +21,23 @@ const submitOrder = async (req, res) => {
         if (!Array.isArray(orderItems) || orderItems.length === 0) 
             return res.status(400).json({ message: "An order must have atleast one item." });
 
+        // check each item's quantity in the basket: <1 & for decimal's; return an error if either is true
+        if (orderItems.some(item =>
+            item.itemQuantity <1 || !Number.isInteger(item.itemQuantity)
+        )) {return res.status(400).json({ message: "An item in the basket must be a whole number and be more than 0."});}
+
+        if (orderItems.some(item =>
+            !mongoose.isValidObjectId(item.menuItemId)
+        )) {return res.status(400).json ({ message: "One or more menu item IDs are invalid." }); }
+
         // info from mongoDB
         const ids = orderItems.map(item => item.menuItemId);
+        const uniqueIds = new Set(ids);
+
+        // check for duplicate ids in the order
+        if (ids.length !== uniqueIds.length) 
+            return res.status(400).json({ message: "One or more menu items in the order is a duplicate." });
+
         const mongoItems = await menuItems.find({
             _id: { $in: ids },
         });
@@ -33,7 +50,7 @@ const submitOrder = async (req, res) => {
         // accepting the orderTotalPrice recieved from the frontend
         const validatedTotal = mongoItems.reduce((sum, mongoItem) => {
 
-            // checking that the recieved items ids are in the database
+            // checking that the recieved item ids are in the database
             const match = orderItems.find(
                 item => item.menuItemId === String(mongoItem._id)
             );
@@ -43,7 +60,7 @@ const submitOrder = async (req, res) => {
 
         const userExists = await user.findById(userId);
         if (!userExists) 
-            return res.status(400).json({ message: "User does not exist." });
+            return res.status(400).json({ message: "User does not exist." });     
 
         const verifiedOrderItems = mongoItems.map(item => {
             // match uses find() to the matching mongoDB ID for the basketItem
