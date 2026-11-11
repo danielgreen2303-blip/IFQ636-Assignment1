@@ -1,19 +1,14 @@
 const mongoose = require("mongoose")
-const user = require("../models/user");
+const user = require("../models/User");
 const menuItems = require("../models/menuItems");
 const order = require("../models/order");
 
 // Controller
 const submitOrder = async (req, res) => {
 
+    const userId = req.user._id;
     // read the items from req
-    const { 
-        userId, 
-        orderItems, 
-        orderTotalPrice, 
-        orderStatus, 
-        orderTime } 
-        = req.body;
+    const { orderItems } = req.body;
 
     try {
 
@@ -35,7 +30,7 @@ const submitOrder = async (req, res) => {
         const uniqueIds = new Set(ids);
 
         // check for duplicate ids in the order
-        if (ids.length !== uniqueIds.length) 
+        if (ids.length !== uniqueIds.size) 
             return res.status(400).json({ message: "One or more menu items in the order is a duplicate." });
 
         const mongoItems = await menuItems.find({
@@ -92,4 +87,13 @@ const submitOrder = async (req, res) => {
     }
 };
 
-module.exports = {submitOrder, }
+const getOrders = async (req, res) =>  {
+    try {
+        const pendingOrders = await order.find({ orderStatus: "Pending" }).sort({ orderTime: -1 });
+        return res.json(pendingOrders)
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+};
+
+module.exports = { submitOrder, getOrders, }

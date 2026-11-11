@@ -1,3 +1,4 @@
+import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import axiosInstance from "../axiosConfig";
 
@@ -11,6 +12,8 @@ const Menu = () => {
     //setBasketItems:
     // creates an empty array that addToBasket, increaseQuantity, decreaseQuantity, and removeItem add/remove from
     const [basketItems, setBasketItems] = useState([]);
+
+    const { user } = useAuth();
 
     //addToBasket:
     // is used in the 'Add to Order' button in the below HTML. It adds an item the the setBasketItems [ ], 
@@ -38,6 +41,26 @@ const Menu = () => {
                 { ...item, quantity: 1 },
             ];
     });
+    };
+
+    // Submit Order button for the basket will use this via onClick: transforms the orderItems into an array the backend expects (i.e., using menuItemId & itemQuantity)
+    // the backend calculates the order price using the stored MongoDB item prices * quantity recieved
+    const handleSubmitOrder = () => {
+        const orderItems = basketItems.map(item => ({
+            menuItemId: item._id,
+            itemQuantity: item.quantity,
+        }));
+
+        if (!user?.token) {
+            alert("Please log in before submitting an order.");
+            return;
+        }
+
+        axiosInstance.post("/api/orders", { orderItems }, { 
+            headers: {
+                Authorization: `Bearer ${user.token}`
+            }
+         })
     };
 
     // decreaseQuantity: 
@@ -113,20 +136,37 @@ const Menu = () => {
 
                             {/* basket management buttons */}
                             <div className="mt-2 flex items-center gap-3">
-                                <button className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100" onClick={() => addToBasket(item)}> + </button>
-                                {item.quantity}
-                                <button className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100" onClick={() => decreaseQuantity(item)}> - </button>
-                                <button className="rounded-md border border-red-300 px-3 py-1 text-red-700 hover:bg-red-50" onClick={() => removeItem(item)}> R </button>
+                                <button
+                                    className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100"
+                                    onClick={() => addToBasket(item)}
+                                    > + </button>
+                                <div>
+                                    {item.quantity}
+                                </div>
+                                <button 
+                                    className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100" 
+                                    onClick={() => decreaseQuantity(item)}
+                                    > - </button>
+                                <button 
+                                    className="rounded-md border border-red-300 px-3 py-1 text-red-700 hover:bg-red-50"
+                                    onClick={() => removeItem(item)}
+                                    > R </button>
                             </div> 
-
                         </div>
                     </div>
+                    
                 ))}
 
                 <p className="mt-3 border-t border-gray-300 pt-3 font-bold">
                     Total: ${basketTotal.toFixed(2)}
                 </p>
-
+            </div>
+            <div>
+                <button
+                    className="rounded-md bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
+                    disabled={basketItems.length === 0}
+                    onClick={handleSubmitOrder}
+                >Submit Order</button>
             </div>
 
             <div className="mx-auto grid max-w-6xl grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Profile from './pages/Profile';
 import Tasks from './pages/Tasks';
 import Menu from './pages/Menu';
+import KitchenBacklog from './pages/kitchen';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/tasks" element={<Tasks />} />
         <Route path="/menu" element={<Menu />} />
+        <Route path="/kitchen" element={<KitchenBacklog />} />
       </Routes>
     </Router>
   );
