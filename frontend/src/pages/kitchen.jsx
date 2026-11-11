@@ -25,7 +25,7 @@ const KitchenBacklog = () => {
     };
 
     return (
-        <div>
+        <div className="max-w-2xl mx-auto p-4">
 
             <h1 className="text-2xl font-bold mb-4 text-center">kitchen Backlog</h1>
 
@@ -43,25 +43,30 @@ const KitchenBacklog = () => {
                     > Refresh </button>
                 </div>
 
-                {pendingOrders.map((order) => (
-                    <div key={order._id}>
+                {pendingOrders.length === 0 ? (
+                    <p className="text-gray-500 text-center py-4">
+                        No pending orders.
+                    </p>
+                ) : (
+                    pendingOrders.map((order) => (
+                    <div className="bg-white border rounded-lg shadow-sm p-4 mb-4" key={order._id}>
 
                         {/* Display order info */}
-                        <p>Order: {order._id}</p>
+                        <p className="flex justify-between items-center mb-2">Order: {order._id}</p>
                         <p>Status: {order.orderStatus}</p>
 
                         {order.orderItems.map((item) => (
-                            <div key={item._id}>
+                            <div className="flex justify-between py-1" key={item._id}>
                                 <p>{item.itemTitle}</p>
                                 <p>Quantity: {item.itemQuantity} </p>
                             </div>
                         ))}
 
                         {/* Display order total */}
-                        <p>Total: {order.orderTotalPrice.toFixed(2)} </p>
+                        <p className="font-bold border-t pt-2 mt-2">Total: {order.orderTotalPrice.toFixed(2)} </p>
 
                     </div>
-                ))}
+                )))}
             </div>
         </div>
     );
