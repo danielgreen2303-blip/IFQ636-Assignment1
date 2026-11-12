@@ -87,10 +87,19 @@ const submitOrder = async (req, res) => {
     }
 };
 
-const getOrders = async (req, res) =>  {
+const getPendingOrders = async (req, res) =>  {
     try {
         const pendingOrders = await order.find({ orderStatus: "Pending" }).sort({ orderTime: -1 });
         return res.json(pendingOrders)
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+};
+
+const getPreparingOrders = async (req, res) =>  {
+    try {
+        const preparingOrders = await order.find({ orderStatus: "Preparing" }).sort({ orderTime: -1 });
+        return res.json(preparingOrders)
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message })
     }
@@ -144,4 +153,10 @@ const setRejectStatus = async (req, res) =>  {
     }
 };
 
-module.exports = { submitOrder, getOrders, setAcceptStatus, setRejectStatus }
+module.exports = { 
+    submitOrder, 
+    getPendingOrders, 
+    getPreparingOrders, 
+    setAcceptStatus, 
+    setRejectStatus, 
+}
