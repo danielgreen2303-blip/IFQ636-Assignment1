@@ -24,6 +24,21 @@ const KitchenBacklog = () => {
         setPendingOrders(response.data)
     };
 
+    const handleAcceptOrders = async () => {
+
+        if (!user?.token) {
+            alert("Please log into a staff account to accept an order.");
+            return;
+        }
+
+        const response = await axiosInstance.patch("/api/orders/{item._id}", {
+            headers: {
+                Authorization: `Bearer ${user.token}`
+            }
+        });
+        setPendingOrders(response.data)
+    };
+
     return (
         <div className="max-w-2xl mx-auto p-4">
 
@@ -39,8 +54,9 @@ const KitchenBacklog = () => {
                 <div className="mt-2 flex items-center gap-3">
                     <button
                         className="min-w-9 rounded-md border border-gray-300 bg-white px-3 py-1 font-semibold hover:bg-gray-100"
-                        onClick={() => handlePendingOrders()}
-                    > Refresh </button>
+                        onClick={() => handlePendingOrders()}> 
+                        Refresh 
+                    </button>
                 </div>
 
                 {pendingOrders.length === 0 ? (
@@ -63,7 +79,13 @@ const KitchenBacklog = () => {
                         ))}
 
                         {/* Display order total */}
-                        <p className="font-bold border-t pt-2 mt-2">Total: {order.orderTotalPrice.toFixed(2)} </p>
+                        <p className="font-bold border-t pt-2 mt-2">
+                            Total: {order.orderTotalPrice.toFixed(2)} 
+                            <button
+                                className="rounded-md bg-green-600 px-4 py-2 font-semibold text-white hover:bg-green-700"
+                                onClick={() => handleAcceptOrders()}
+                            >Accept</button> 
+                        </p>
 
                     </div>
                 )))}

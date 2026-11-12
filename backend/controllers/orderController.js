@@ -96,4 +96,52 @@ const getOrders = async (req, res) =>  {
     }
 };
 
-module.exports = { submitOrder, getOrders, }
+const setAcceptStatus = async (req, res) =>  {
+    try {
+        const { orderId } = req.params;
+        const existingOrder = await order.findById(orderId);
+
+        // Validate the order ID in MongoDB prior to changing the status to 'PReparing'
+        if (!mongoose.isValidObjectId(orderId)) {
+            return res.status(400).json({ message: "Invalid order ID." })
+        }
+        if (!existingOrder) {
+            return res.status(404).json({ message: "Order not found." });
+        }
+        if (existingOrder.orderStatus !== "Pending") {
+            return res.status(409).json({ message: "Order cannot be accepted because the status is not 'Pending'." });
+        }
+        existingOrder.orderStatus = "Preparing"
+        await existingOrder.save();
+        return res.status(200).json(existingOrder);
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+};
+
+const setRejectStatus = async (req, res) =>  {
+    try {
+        const { orderId } = req.params;
+        const existingOrder = await order.findById(orderId);
+
+        // Validate the order ID in MongoDB prior to changing the status to 'PReparing'
+        if (!mongoose.isValidObjectId(orderId)) {
+            return res.status(400).json({ message: "Invalid order ID." })
+        }
+        if (!existingOrder) {
+            return res.status(404).json({ message: "Order not found." });
+        }
+        if (existingOrder.orderStatus !== "Pending") {
+            return res.status(409).json({ message: "Order cannot be rejected because the status is not 'Pending'." });
+        }
+        existingOrder.orderStatus = "Rejected"
+        await existingOrder.save();
+        return res.status(200).json(existingOrder);
+
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message })
+    }
+};
+
+module.exports = { submitOrder, getOrders, setAcceptStatus, setRejectStatus }
