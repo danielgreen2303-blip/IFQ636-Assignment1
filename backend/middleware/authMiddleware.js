@@ -21,4 +21,11 @@ const protect = async (req, res, next) => {
     }
 };
 
-module.exports = { protect };
+const staffOnly = (req, res, next) => {
+    if (req.user?.role === "Staff")
+        next();
+    else
+        return res.status(403).json({ message: "You must be logged in as staff to access this." })
+};
+
+module.exports = { protect, staffOnly };

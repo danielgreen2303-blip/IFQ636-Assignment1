@@ -7,4 +7,4 @@ const MenuItemSchema = new mongoose.Schema({
     itemImageLocation: { type: String, required: true },
 })
 
-module.exports = mongoose.model("MenuItem", MenuItemSchema)
+module.exports = mongoose.model("menuItem", MenuItemSchema)
